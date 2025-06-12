@@ -1,14 +1,18 @@
-# Gratis AI-API varje dag? Ja tack!
+# Gratis AI-API varje dag, med 1minAI
 
-*Publicerad av [Marcus Medina🔗](https://www.linkedin.com/in/marcusmedina/) – Kodpedagog, AI-nörd och smått beroende av bra API*\*:er\* 
+*Publicerad av [Marcus Medina](https://www.linkedin.com/in/marcusmedina/) – Kodpedagog, AI-nörd och smått beroende av bra API\:er*
 
 ## Lär dig AIs i en gratismiljö?
 
 Har du också tröttnat på att köpa tokens som om det vore godis på lösvikt? 1MinAI är ett **enkelt, snabbt och generöst AI-API** där du kan leka fritt med språkmodeller som GPT-4o, Claude, Gemini och Mistral.
-Vill du sedan utveckla större saker så finns möjligheten att [betala för fler tokens](https://1min.ai/?referrer_id=9b12faba-f8a3-49ea-bd25-d8343f1fd965#pricing)
 
-Då har jag ett hett tips till dig: **[1minAI](https://1min.ai/?referrer_id=9b12faba-f8a3-49ea-bd25-d8343f1fd965)**
-Det är gratis att komma igång, du får **15 000 tokens varje dag** bara av att logga in – och om du använder min referenslänk får du dessutom en **välkomstbonus på 200 000 tokens**.
+Vill du sedan utveckla större saker så finns möjligheten att [betala för fler tokens](https://1min.ai).
+
+Då har jag ett hett tips till dig: **[1minAI](https://1min.ai)**
+
+Det är gratis att komma igång, du får **15 000 tokens varje dag** bara av att logga in.
+
+---
 
 ## Vad är 1minAI?
 
@@ -18,27 +22,83 @@ Det är gratis att komma igång, du får **15 000 tokens varje dag** bara av att
 * Generera bilder, kod och text via samma endpoint
 * Välja bland massor av modeller
 * Bygga egna appar utan att bekymra dig om OpenAI-priser
-* Den har en hel frös med specialfunktioner som kan köras mot olika modeller
+* Utnyttja specialfunktioner unikt för olika modeller
 
 > Tips: Se till att logga in varje dag för att få mer tokens.
+
+---
 
 ## Kom igång på 3 minuter
 
 Du behöver:
 
-* Ett gratis 1minAI-konto (signa upp här: [1minAI](https://1min.ai/?referrer_id=9b12faba-f8a3-49ea-bd25-d8343f1fd965))
-* Du skapar API-nyckel genom att klicka på ditt team högst upp till vänster, och i menyn API.
-* En miljövariabel `ONEMINAI_API_KEY` på din dator eller en `.env`-fil (som du absolut aldrig committar till GitHub)
-* Några rader kod – se nedan!
-* Logga in dagligen för mer [gratis credits](https://1min.ai/?referrer_id=9b12faba-f8a3-49ea-bd25-d8343f1fd965#free-credits)
-Observera att koden inte har minne för meddelanden, det kommer i nästa exempel. Jag lägger upp exempel för att deras API inte fungerar exakt som OpenAIs.
+* Ett gratis 1minAI-konto ([1minAI](https://1min.ai))
+* En API-nyckel (från team-menyn)
+* En miljövariabel `ONEMINAI_API_KEY` eller `.env`-fil (aldrig committa denna!)
+* Några rader kod – se exempel nedan
 
 ---
 
+## Enkel fråga till API\:t med minne
+
+**Input:**
+
+```json
+{
+  "type": "CHAT_WITH_AI",
+  "model": "gpt-4o-mini",
+  "conversationId": "test-session-123",
+  "promptObject": {
+    "prompt": "Om en höna lägger ett ägg på 1 timme, hur många ägg lägger 3 hönor på en halvtimme",
+    "temperature": 0.7,
+    "max_tokens": 200,
+    "top_p": 0.9
+  }
+}
+```
+
+**Svar:**
+
+```json
+{
+  "aiRecord": {
+    "uuid": "...",
+    "model": "gpt-4o-mini",
+    "type": "CHAT_WITH_AI",
+    "conversationId": "test-session-123",
+    "status": "SUCCESS",
+    "aiRecordDetail": {
+      "promptObject": {
+        "top_p": 0.9,
+        "prompt": "Om en höna lägger ett ägg på 1 timme, hur många ägg lägger 3 hönor på en halvtimme",
+        "max_tokens": 200,
+        "temperature": 0.7
+      },
+      "resultObject": [
+        "Om en höna lägger ett ägg på 1 timme, så lägger en höna hälften av ett ägg på en halvtimme. Därför skulle tre hönor tillsammans lägga 3 x 0.5 = 1,5 ägg på en halvtimme. Så svaret är 1,5 ägg."
+      ]
+    }
+  }
+}
+```
+
+> Genom att återanvända samma `conversationId` kan du bygga upp ett minne i konversationen.
+
+Vill du göra nästa fråga baserad på förra svaret? Lägg bara till en ny prompt med samma ID, till exempel:
+
+```json
+{
+  "conversationId": "test-session-123",
+  "promptObject": { "prompt": "Och hur många ägg på två timmar?" }
+}
+```
+
 ## Exempelkod i Node.js
 
+<details>
+<summary>Klicka för att visa Node.js-exempel</summary>
+
 ```js
-// aiChat.js
 import readline from 'readline';
 import fetch from 'node-fetch';
 
@@ -51,12 +111,15 @@ if (!apiKey) {
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 console.log("Skriv något till AI:n (skriv 'exit' för att avsluta)");
 
+const conversationId = "test-session-123";
+
 const ask = () => rl.question('\n> ', async (input) => {
   if (input.trim().toLowerCase() === 'exit') return rl.close();
 
   const payload = {
     type: "CHAT_WITH_AI",
     model: "gpt-4o-mini",
+    conversationId,
     promptObject: { prompt: input, temperature: 0.7, max_tokens: 200, top_p: 0.9 }
   };
 
@@ -80,9 +143,14 @@ const ask = () => rl.question('\n> ', async (input) => {
 ask();
 ```
 
+</details>
+
 ---
 
 ## Samma sak i C\#
+
+<details>
+<summary>Klicka för att visa C#-exempel</summary>
 
 ```csharp
 using System.Net.Http;
@@ -105,6 +173,8 @@ static class Program
         client.DefaultRequestHeaders.Add("API-KEY", apiKey);
         Console.WriteLine("Skriv något till AI:n (skriv 'exit' för att avsluta)");
 
+        var conversationId = "test-session-123";
+
         while (true)
         {
             Console.Write("\n> ");
@@ -115,6 +185,7 @@ static class Program
             {
                 type = "CHAT_WITH_AI",
                 model = "gpt-4o-mini",
+                conversationId,
                 promptObject = new { prompt = input, temperature = 0.7, max_tokens = 200, top_p = 0.9 }
             });
 
@@ -140,11 +211,14 @@ static class Program
 }
 ```
 
+</details>
+
 ---
 
 ## Vilka AI-modeller kan du använda?
 
-1minAI låter dig välja bland en lång lista av kraftfulla språkmodeller – både från OpenAI, Google, Anthropic, Meta, Mistral, och andra. Här är några exempel:
+<details>
+<summary>Visa modellista</summary>
 
 ```text
 gpt-4o, gpt-4o-turbo, gpt-3.5-turbo, gemini-1.5-flash, gemini-1.5-pro,
@@ -157,30 +231,23 @@ meta/meta-llama-3.1-405b-instruct, meta/llama-2-70b-chat,
 deepseek-chat, gemini-1.0-pro etc etc...
 ```
 
-### Tokenkostnader varierar
+</details>
 
-Ju nyare och mer avancerad modellen är, desto fler tokens kan den kosta per anrop. Exempelvis:
-
-* **gpt-4o-mini** → låg kostnad, perfekt för enkla experiment
-* **Claude 3 Opus** → hög kapacitet, men dyrare
-* **Gemini 1.5 Pro** → avancerad Google-modell, kostar mer tokens
-* **Mixtral 8x22b** → experimentell open source med bra prestanda
-
-Du ser inte tokenkostnaden direkt i API\:t, men det märks i hur snabbt dina dagliga tokens används upp. Håll utkik efter deras nyhetsbrev – där listas nya modeller löpande!
+> Tokenkostnader varierar – nyare modeller drar fler tokens, så experimentera och hitta balansen.
 
 ---
 
 ## Kliv in i AI-världen utan kostnad
 
-Det är sällsynt med så pass generösa AI-tjänster som faktiskt fungerar smidigt direkt. 1minAI har blivit ett av mina favoritsätt att testa kodexempel med studerande,
-experimentera med olika modeller, och till och med bygga egna appar – utan att det kostar ett öre. Vilket är viktigt för studerande.
+Det är sällsynt med så pass generösa AI-tjänster som faktiskt fungerar smidigt direkt.
 
-👉 Testa själv via:
-🔗 [https://1min.ai/?referrer\_id=9b12faba-f8a3-49ea-bd25-d8343f1fd965](https://1min.ai/?referrer_id=9b12faba-f8a3-49ea-bd25-d8343f1fd965)
+1minAI har blivit ett av mina favoritsätt att testa kodexempel med studerande,
+experimentera med olika modeller, och till och med bygga egna appar – utan att det kostar ett öre.
+
+👉 Testa själv via: [https://1min.ai](https://1min.ai)
 
 ---
 
 ### PS: Vill du se fler artiklar, kodexempel och AI-hacks?
 
 Tryck gärna på ⭐ om du gillar projektet.
-
